@@ -14,13 +14,13 @@ def xor(data,key):
     return output
 
 def printCipherText(ciphertext):
-    print('{ 0x' + ', 0x',join(hex(ord(x))[2:] for j in x in ciphertext) + ' };')
+    print('{ 0x' + ', 0x'.join(hex(ord(x))[2:] for x in ciphertext) + ' };')
 
 try:
     plaintxt = open(sys.argv[1],"rb").read()
 except:
     print("File not found, try giving an argument loser, or -i for interactive mode")
-    sys.exit()
+    #sys.exit()
 
 ciphertext = xor(plaintxt, KEY)
 open("favicon.ico","wb").write(ciphertext)
